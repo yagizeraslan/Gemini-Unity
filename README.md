@@ -10,48 +10,50 @@
   <a href="https://github.com/sponsors/yagizeraslan">
     <img alt="Sponsor" src="https://img.shields.io/badge/Sponsor-❤-ff69b4">
   </a>
-  <a href="https://github.com/yagizeraslan/Claude-Unity/commits/main">
-    <img alt="Last Commit" src="https://img.shields.io/github/last-commit/yagizeraslan/Claude-Unity">
+  <a href="https://github.com/yagizeraslan/Gemini-Unity/commits/main">
+    <img alt="Last Commit" src="https://img.shields.io/github/last-commit/yagizeraslan/Gemini-Unity">
   </a>
-  <a href="https://github.com/yagizeraslan/Claude-Unity">
-    <img alt="Code Size" src="https://img.shields.io/github/languages/code-size/yagizeraslan/Claude-Unity">
+  <a href="https://github.com/yagizeraslan/Gemini-Unity">
+    <img alt="Code Size" src="https://img.shields.io/github/languages/code-size/yagizeraslan/Gemini-Unity">
   </a>
   <br/>
   
   <!-- Bottom bigger social + platform badges -->
   <img alt="Maintenance" src="https://img.shields.io/badge/Maintained-Yes-brightgreen">
-  <a href="https://github.com/yagizeraslan/Claude-Unity/stargazers">
-    <img alt="GitHub stars" src="https://img.shields.io/github/stars/yagizeraslan/Claude-Unity?style=social">
+  <a href="https://github.com/yagizeraslan/Gemini-Unity/stargazers">
+    <img alt="GitHub stars" src="https://img.shields.io/github/stars/yagizeraslan/Gemini-Unity?style=social">
   </a>
-  <a href="https://github.com/yagizeraslan/Claude-Unity/network/members">
-    <img alt="GitHub forks" src="https://img.shields.io/github/forks/yagizeraslan/Claude-Unity?style=social">
+  <a href="https://github.com/yagizeraslan/Gemini-Unity/network/members">
+    <img alt="GitHub forks" src="https://img.shields.io/github/forks/yagizeraslan/Gemini-Unity?style=social">
   </a>
-  <a href="https://github.com/yagizeraslan/Claude-Unity/issues">
-    <img alt="GitHub issues" src="https://img.shields.io/github/issues/yagizeraslan/Claude-Unity?style=social">
+  <a href="https://github.com/yagizeraslan/Gemini-Unity/issues">
+    <img alt="GitHub issues" src="https://img.shields.io/github/issues/yagizeraslan/Gemini-Unity?style=social">
   </a>
   <img alt="Windows" src="https://img.shields.io/badge/Platform-Windows-blue">
   <img alt="WebGL" src="https://img.shields.io/badge/Platform-WebGL-orange">
   <img alt="Android" src="https://img.shields.io/badge/Platform-Android-green">
 </p>
 
-# 🧠 Claude API for Unity
+# 🤖 Gemini API for Unity
 
-> 💬 A clean, modular Unity integration for Claude's powerful LLMs — chat, reasoning, and task automation made easy.
+> 💬 A clean, modular Unity integration for Google Gemini's powerful AI models — chat, reasoning, and multimodal capabilities made easy.
 > 
 
-⚠️ **Note**: This is an unofficial integration not affiliated with or endorsed by Claude.
+⚠️ **Note**: This is an unofficial integration not affiliated with or endorsed by Google.
 
 ---
 
 ## ✨ Features
 
-- ✅ Clean, reusable SDK for Claude API
+- ✅ Clean, reusable SDK for Google Gemini API
 - 🔄 Supports true SSE-based streaming and non-streaming chat completions
-- 🧠 Compatible with multiple models (Sonnet, Opus, Haiku)
-- 🎨 Modular & customizable UI chat component
+- 🧠 Compatible with latest Gemini models (2.5 Pro, 2.5 Flash, 2.0 Flash series)
+- 🎨 Modular & customizable UI chat component with advanced memory management
 - 🔐 Secure API key storage (runtime-safe)
 - ⚙️ Built with Unity Package Manager (UPM)
 - 🧪 Includes sample scene & prefabs
+- 🛡️ Comprehensive error handling with user-friendly messages
+- 🔧 Editor tools for easy API key management
 
 ---
 
@@ -79,7 +81,7 @@
 
 - Unity 2020.3 LTS or newer
 - TextMeshPro (via Package Manager)
-- Claude API key from [console.anthropic.com](https://console.anthropic.com/)
+- Google Gemini API key from [Google AI Studio](https://aistudio.google.com/)
 
 ---
 
@@ -93,7 +95,7 @@
 4. Paste:
     
     ```csharp
-    https://github.com/yagizeraslan/Claude-Unity.git
+    https://github.com/yagizeraslan/Gemini-Unity.git
     
     ```
     
@@ -106,8 +108,9 @@
 ### 🔧 Setup
 
 1. After installation, download Sample scene from Package Manager
-2. Paste your **API key** into the ClaudeSettings.asset.
-3. Hit Play — and chat with Claude AI in seconds 💬
+2. Go to **Gemini/Settings** menu to configure your API key
+3. Or create a **GeminiSettings.asset** and assign your API key
+4. Hit Play — and chat with Gemini AI in seconds 💬
 
 ---
 
@@ -115,12 +118,12 @@
 
 To test everything:
 
-1. In **Package Manager**, under **Claude API for Unity**, click **Samples**
-2. Click **Import** on `Claude Chat Example`
+1. In **Package Manager**, under **Gemini API for Unity**, click **Samples**
+2. Click **Import** on `Gemini Chat Example`
 3. Open:
     
     ```csharp
-    Assets/Samples/Claude API for Unity/1.0.0/Claude Chat Example/Scenes/Claude-Chat.unity
+    Assets/Samples/Gemini API for Unity/1.0.0/Gemini Chat Example/Scenes/Gemini-Chat.unity
 
     ```
     
@@ -133,8 +136,8 @@ To test everything:
 
 ## 🔐 API Key Handling
 
-- During dev: Store key via `EditorPrefs` using the Claude Editor Window
-- In production builds: Use the `ClaudeSettings` ScriptableObject (recommended)
+- During dev: Store key via `EditorPrefs` using the **Gemini/Settings** editor window
+- In production builds: Use the `GeminiSettings` ScriptableObject (recommended)
 
 **DO NOT** hardcode your key in scripts or prefabs — Unity will reject the package.
 
@@ -158,47 +161,49 @@ To test everything:
 ### 🕐 Non-Streaming (Full Response)
 
 ```csharp
-[SerializeField] private ClaudeSettings config;
+[SerializeField] private GeminiSettings config;
 
 private async void Start()
 {
-    var api = new ClaudeApi(config);
+    var api = new GeminiAPI(config);
     var request = new ChatCompletionRequest
     {
-        model = ClaudeModel.Claude_3_Sonnet.ToModelString(),
+        model = GeminiModel.Gemini_25_Pro.ToModelString(),
         messages = new ChatMessage[]
         {
-            new ChatMessage { role = "user", content = "Tell me something cool." }
+            new ChatMessage { role = "user", content = "Tell me something cool about space." }
         }
     };
 
     var response = await api.CreateChatCompletion(request);
-    Debug.Log("[Claude] " + response.content[0].text);
+    Debug.Log("[Gemini] " + response.choices[0].message.content);
 }
 
 ```
 
 ### 🔄 Streaming (Real-Time Updates)
 ```csharp
-[SerializeField] private ClaudeSettings config;
+[SerializeField] private GeminiSettings config;
 
 private void Start()
 {
     var request = new ChatCompletionRequest
     {
-        model = ClaudeModel.Claude_3_Sonnet.ToModelString(),
+        model = GeminiModel.Gemini_25_Flash.ToModelString(),
         messages = new ChatMessage[]
         {
-            new ChatMessage { role = "user", content = "Stream a fun fact about space." }
+            new ChatMessage { role = "user", content = "Stream a fun fact about AI." }
         },
         stream = true
     };
 
-    var streamingApi = new ClaudeStreamingApi();
+    var streamingApi = new GeminiStreamingApi();
     streamingApi.CreateChatCompletionStream(
         request,
-        config.apiKey,
-        token => Debug.Log("[Claude Streaming] " + token)
+        config.ApiKey,
+        token => Debug.Log("[Gemini Streaming] " + token),
+        () => Debug.Log("Streaming completed"),
+        error => Debug.LogError("Error: " + error)
     );
 }
 
@@ -210,11 +215,12 @@ private void Start()
 
 ### 🔄 Streaming Support
 
-Claude-Unity supports **real-time streaming** using Claude's official `stream: true` Server-Sent Events (SSE) endpoint.
+Gemini-Unity supports **real-time streaming** using Google's Gemini streaming API with Server-Sent Events (SSE).
 
 ✅ Uses Unity's `DownloadHandlerScript` for chunked response handling  
 ✅ UI updates per-token (no simulated typewriter effect)  
 ✅ No coroutines, no external libraries — works natively in Unity
+✅ Advanced memory management with buffer limits and cleanup
 
 To enable:
 - Check `Use Streaming` in the chat prefab or component
@@ -222,12 +228,20 @@ To enable:
 
 📌 You can toggle streaming on/off at runtime.
 
-### 💬 Multiple Models
+### 💬 Current Gemini Models
 
 ```csharp
-ClaudeModel.Claude_3_Opus
-ClaudeModel.Claude_3_Sonnet
-ClaudeModel.Claude_3_Haiku
+// Latest Models (2024-2025)
+GeminiModel.Gemini_25_Pro        // State-of-the-art (Default)
+GeminiModel.Gemini_25_Flash      // Best price-performance (Recommended)
+GeminiModel.Gemini_25_Flash_Lite // Lightweight and fast
+GeminiModel.Gemini_20_Flash      // Advanced features
+GeminiModel.Gemini_20_Flash_Lite // Efficient processing
+
+// Legacy Models (Deprecated)
+GeminiModel.Gemini_15_Pro        // Will be unavailable April 2025
+GeminiModel.Gemini_15_Flash      // Will be unavailable April 2025
+GeminiModel.Gemini_15_Flash_8B   // Will be unavailable April 2025
 
 ```
 
@@ -237,22 +251,27 @@ ClaudeModel.Claude_3_Haiku
 
 **Can't add component?**
 
-→ Make sure you dragged `ClaudeSettings.asset` into the ClaudeChat.cs's Config field.
+→ Make sure you created `GeminiSettings.asset` and assigned it to the GeminiChatController's Settings field.
 
 **Streaming not working?**
 
 → Make sure you're on a platform that supports `DownloadHandlerScript` (Standalone or Editor).  
-→ WebGL and iOS may have platform limitations for live SSE streams.
+→ WebGL may have platform limitations for live SSE streams.
 
 **Seeing JSON parse warnings in streaming mode?**  
 
-→ These are normal during SSE — they occur when the parser receives partial chunks. They're automatically skipped and won't affect the final output.
+→ These are normal during SSE — they occur when the parser receives partial chunks. They're automatically handled and won't affect the final output.
+
+**Getting API errors?**
+
+→ Check your API key in **Gemini/Settings** menu
+→ Ensure you have a valid Google Gemini API key from [Google AI Studio](https://aistudio.google.com/)
 
 ---
 
 ## 💖 Support This Project
 
-If you find **Claude-Unity** useful, please consider supporting its development!
+If you find **Gemini-Unity** useful, please consider supporting its development!
 
 - [Become a sponsor on GitHub Sponsors](https://github.com/sponsors/yagizeraslan)
 - [Buy me a coffee on Ko-fi](https://ko-fi.com/yagizeraslan)
@@ -263,7 +282,7 @@ Your support helps me continue maintaining and improving this project. Thank you
 
 ## 📄 License
 
-Unofficial Claude integration. Claude™ is a trademark of Anthropic PBC.
+Unofficial Google Gemini integration. Gemini™ is a trademark of Google LLC.
 
 This project is licensed under the MIT License.
 
