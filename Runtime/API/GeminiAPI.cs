@@ -39,7 +39,7 @@ namespace YagizEraslan.Gemini.Unity
             }
             catch (Exception e)
             {
-                var errorContext = string.IsNullOrEmpty(jsonResponse) ? "No response data" : $"Response: {jsonResponse?.Substring(0, Math.Min(200, jsonResponse.Length ?? 0))}...";
+                var errorContext = string.IsNullOrEmpty(jsonResponse) ? "No response data" : $"Response: {jsonResponse.Substring(0, Math.Min(200, jsonResponse.Length))}...";
                 Debug.LogError($"Failed to parse Gemini API response: {e.Message}. {errorContext}");
                 throw new Exception($"Failed to parse API response: {e.Message}");
             }
