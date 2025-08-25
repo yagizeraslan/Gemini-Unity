@@ -25,7 +25,7 @@ namespace YagizEraslan.Gemini.Unity
                 var geminiRequest = ConvertToGeminiRequest(request);
                 var jsonPayload = JsonUtility.ToJson(geminiRequest);
                 
-                var url = $"{BASE_URL}{request.model}:streamGenerateContent";
+                var url = $"{BASE_URL}{request.model}:streamGenerateContent?alt=sse";
                 Debug.Log($"[GeminiStreamingApi] Sending streaming request to: {url}");
                 Debug.Log($"[GeminiStreamingApi] Request payload: {jsonPayload}");
                 
@@ -51,12 +51,15 @@ namespace YagizEraslan.Gemini.Unity
                 
                 // Monitor the request status
                 sendOperation.completed += (asyncOp) => {
-                    Debug.Log($"[GeminiStreamingApi] Request completed with result: {activeRequest.result}");
-                    if (activeRequest.result != UnityWebRequest.Result.Success && activeRequest.result != UnityWebRequest.Result.InProgress)
+                    if (activeRequest != null)
                     {
-                        Debug.LogError($"[GeminiStreamingApi] Request failed: {activeRequest.error} (HTTP {activeRequest.responseCode})");
-                        Debug.LogError($"[GeminiStreamingApi] Response text: {activeRequest.downloadHandler?.text}");
-                        onError?.Invoke($"HTTP {activeRequest.responseCode}: {activeRequest.error}");
+                        Debug.Log($"[GeminiStreamingApi] Request completed with result: {activeRequest.result}");
+                        if (activeRequest.result != UnityWebRequest.Result.Success && activeRequest.result != UnityWebRequest.Result.InProgress)
+                        {
+                            Debug.LogError($"[GeminiStreamingApi] Request failed: {activeRequest.error} (HTTP {activeRequest.responseCode})");
+                            Debug.LogError($"[GeminiStreamingApi] Response text: {activeRequest.downloadHandler?.text}");
+                            onError?.Invoke($"HTTP {activeRequest.responseCode}: {activeRequest.error}");
+                        }
                     }
                 };
                 
@@ -194,9 +197,15 @@ namespace YagizEraslan.Gemini.Unity
 
             private void ProcessSingleLine(string line)
             {
+                line = line.Trim();
+                
+                // Skip empty lines
+                if (string.IsNullOrEmpty(line)) return;
+                
+                // Handle SSE format
                 if (!line.StartsWith("data: ")) return;
 
-                var jsonData = line.Substring(6);
+                var jsonData = line.Substring(6).Trim();
                 Debug.Log($"[GeminiStreamingApi] Processing streaming data: {jsonData}");
                 
                 if (jsonData == "[DONE]")
@@ -230,6 +239,10 @@ namespace YagizEraslan.Gemini.Unity
                         {
                             Debug.Log("[GeminiStreamingApi] No content/parts found in candidate");
                         }
+                    }
+                    else
+                    {
+                        Debug.Log("[GeminiStreamingApi] No candidates found in response");
                     }
                 }
                 catch (Exception e)
@@ -294,6 +307,12 @@ namespace YagizEraslan.Gemini.Unity
         private class GeminiStreamResponse
         {
             public Candidate[] candidates;
+        }
+
+        [Serializable]
+        private class GeminiStreamResponseArray
+        {
+            public GeminiStreamResponse[] responses;
         }
 
         [Serializable]
