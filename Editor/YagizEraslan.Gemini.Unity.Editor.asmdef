@@ -1,0 +1,18 @@
+{
+    "name": "YagizEraslan.Gemini.Unity.Editor",
+    "rootNamespace": "YagizEraslan.Gemini.Unity",
+    "references": [
+        "YagizEraslan.Gemini.Unity"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

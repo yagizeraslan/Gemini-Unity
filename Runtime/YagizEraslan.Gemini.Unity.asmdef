@@ -1,0 +1,14 @@
+{
+    "name": "YagizEraslan.Gemini.Unity",
+    "rootNamespace": "YagizEraslan.Gemini.Unity",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
