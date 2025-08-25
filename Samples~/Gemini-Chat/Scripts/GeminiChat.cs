@@ -23,9 +23,7 @@ namespace YagizEraslan.Gemini.Unity
         [SerializeField] private int maxUIMessages = 100;
         [SerializeField] private int trimToMessages = 70;
 
-        private GeminiChatController controller;
         private TMP_Text activeStreamingText;
-        private bool controllerInitialized = false;
         private readonly List<GameObject> messageGameObjects = new();
 
         private void Start()
@@ -51,46 +49,22 @@ namespace YagizEraslan.Gemini.Unity
         {
             if (string.IsNullOrWhiteSpace(inputField.text)) return;
 
-            // Initialize controller only once
-            if (!controllerInitialized)
+            // Validate configuration
+            if (config == null)
             {
-                InitializeController();
-                controllerInitialized = true;
+                HandleError("GeminiSettings configuration is not assigned. Please assign a GeminiSettings asset in the inspector.");
+                return;
             }
 
             // Add user message to UI first
             var userMessage = new ChatMessage("user", inputField.text);
             AddFullMessageToUI(userMessage, true);
 
-            // Send message through controller
+            // Send message to Gemini API
             SendMessageToGemini(inputField.text);
             
             inputField.text = ""; // Clear input
             inputField.ActivateInputField(); // Focus input again
-        }
-
-        private void InitializeController()
-        {
-            if (useStreaming)
-            {
-                var streamingApi = new GeminiStreamingApi();
-                controller = new GeminiChatController();
-                
-                // Subscribe to events for streaming
-                controller.OnMessageReceived += (message) => AddFullMessageToUI(new ChatMessage("assistant", message), false);
-                controller.OnStreamingUpdate += AppendStreamingCharacter;
-                controller.OnError += HandleError;
-                controller.OnStreamingComplete += OnStreamingComplete;
-            }
-            else
-            {
-                var geminiApi = new GeminiAPI();
-                controller = new GeminiChatController();
-                
-                // Subscribe to events for non-streaming
-                controller.OnMessageReceived += (message) => AddFullMessageToUI(new ChatMessage("assistant", message), false);
-                controller.OnError += HandleError;
-            }
         }
 
         private async void SendMessageToGemini(string message)
@@ -112,16 +86,17 @@ namespace YagizEraslan.Gemini.Unity
                     AddEmptyAssistantMessage();
                     
                     var streamingApi = new GeminiStreamingApi();
-                    await streamingApi.CreateChatCompletionStream(
+                    streamingApi.CreateChatCompletionStream(
                         request,
-                        OnStreamToken,
-                        OnStreamComplete,
-                        OnStreamError
+                        config.ApiKey, // API key parameter
+                        OnStreamToken,  // onTokenReceived
+                        OnStreamComplete, // onComplete
+                        OnStreamError   // onError
                     );
                 }
                 else
                 {
-                    var geminiApi = new GeminiAPI();
+                    var geminiApi = new GeminiAPI(config); // Pass GeminiSettings
                     var response = await geminiApi.CreateChatCompletion(request);
                     
                     if (response != null && response.choices != null && response.choices.Length > 0)
@@ -246,12 +221,6 @@ namespace YagizEraslan.Gemini.Unity
 
         public void ClearChat()
         {
-            if (controller != null)
-            {
-                // Clear controller history if available
-                // Note: This depends on GeminiChatController having a ClearHistory method
-            }
-            
             // Clear UI messages using tracked GameObjects
             for (int i = 0; i < messageGameObjects.Count; i++)
             {
@@ -272,15 +241,6 @@ namespace YagizEraslan.Gemini.Unity
             if (inputField != null)
             {
                 inputField.onSubmit.RemoveAllListeners();
-            }
-
-            // Unsubscribe from controller events
-            if (controller != null)
-            {
-                controller.OnMessageReceived -= (message) => AddFullMessageToUI(new ChatMessage("assistant", message), false);
-                controller.OnStreamingUpdate -= AppendStreamingCharacter;
-                controller.OnError -= HandleError;
-                controller.OnStreamingComplete -= OnStreamingComplete;
             }
         }
     }
