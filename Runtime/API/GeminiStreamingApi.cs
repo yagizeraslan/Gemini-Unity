@@ -98,7 +98,7 @@ namespace YagizEraslan.Gemini.Unity
             };
         }
 
-        private class StreamingDownloadHandler : DownloadHandlerScript
+        private class StreamingDownloadHandler : DownloadHandlerScript, IDisposable
         {
             private readonly Action<string> onTokenReceived;
             private readonly Action onComplete;
@@ -214,14 +214,14 @@ namespace YagizEraslan.Gemini.Unity
                 onComplete?.Invoke();
             }
 
-            protected override void Dispose(bool disposing)
+            public new void Dispose()
             {
-                if (!isDisposed && disposing)
+                if (!isDisposed)
                 {
                     CleanupBuffer();
                     isDisposed = true;
                 }
-                base.Dispose(disposing);
+                base.Dispose();
             }
         }
 
