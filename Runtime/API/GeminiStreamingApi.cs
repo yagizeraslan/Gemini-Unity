@@ -25,7 +25,9 @@ namespace YagizEraslan.Gemini.Unity
                 var geminiRequest = ConvertToGeminiRequest(request);
                 var jsonPayload = JsonUtility.ToJson(geminiRequest);
                 
-                var url = $"{BASE_URL}{request.model}:streamGenerateContent?key={apiKey}";
+                var url = $"{BASE_URL}{request.model}:streamGenerateContent";
+                Debug.Log($"[GeminiStreamingApi] Sending streaming request to: {url}");
+                Debug.Log($"[GeminiStreamingApi] Request payload: {jsonPayload}");
                 
                 activeRequest = new UnityWebRequest(url, "POST")
                 {
@@ -42,6 +44,7 @@ namespace YagizEraslan.Gemini.Unity
                 };
                 
                 activeRequest.SetRequestHeader("Content-Type", "application/json");
+                activeRequest.SetRequestHeader("x-goog-api-key", apiKey);
                 activeRequest.SendWebRequest();
                 
                 return activeRequest;
@@ -174,6 +177,8 @@ namespace YagizEraslan.Gemini.Unity
                 if (!line.StartsWith("data: ")) return;
 
                 var jsonData = line.Substring(6);
+                Debug.Log($"[GeminiStreamingApi] Processing streaming data: {jsonData}");
+                
                 if (jsonData == "[DONE]")
                 {
                     CleanupBuffer();

@@ -52,7 +52,7 @@ namespace YagizEraslan.Gemini.Unity
             var geminiRequest = ConvertToGeminiRequest(request);
             var jsonPayload = JsonUtility.ToJson(geminiRequest);
             
-            var url = $"{BASE_URL}{request.model}:generateContent?key={settings.ApiKey}";
+            var url = $"{BASE_URL}{request.model}:generateContent";
             
             using var www = new UnityWebRequest(url, "POST")
             {
@@ -62,6 +62,10 @@ namespace YagizEraslan.Gemini.Unity
             };
             
             www.SetRequestHeader("Content-Type", "application/json");
+            www.SetRequestHeader("x-goog-api-key", settings.ApiKey);
+            
+            Debug.Log($"[GeminiAPI] Sending request to: {url}");
+            Debug.Log($"[GeminiAPI] Request payload: {jsonPayload}");
             
             try
             {
@@ -83,6 +87,8 @@ namespace YagizEraslan.Gemini.Unity
                 }
                 
                 var responseText = www.downloadHandler.text;
+                Debug.Log($"[GeminiAPI] Response received: {responseText}");
+                
                 if (string.IsNullOrEmpty(responseText))
                 {
                     throw new Exception("Received empty response from Gemini API");
