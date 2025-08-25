@@ -9,7 +9,7 @@ namespace YagizEraslan.Gemini.Unity
     {
         [Header("Gemini Configuration")]
         [SerializeField] private GeminiSettings config;
-        [SerializeField] private GeminiModel modelType = GeminiModel.Gemini_25_Pro;
+        [SerializeField] private GeminiModel modelType = GeminiModel.Gemini_25_Flash;
         [SerializeField] private bool useStreaming = true;
 
         [Header("UI Elements")]
@@ -131,6 +131,7 @@ namespace YagizEraslan.Gemini.Unity
 
         private void OnStreamToken(string token)
         {
+            Debug.Log($"[GeminiChat] OnStreamToken received: '{token}'");
             AppendStreamingCharacter(token);
         }
 
@@ -176,9 +177,11 @@ namespace YagizEraslan.Gemini.Unity
 
         private void AppendStreamingCharacter(string partialContent)
         {
+            Debug.Log($"[GeminiChat] AppendStreamingCharacter called with: '{partialContent}'");
             if (activeStreamingText != null)
             {
                 activeStreamingText.text = partialContent;
+                Debug.Log($"[GeminiChat] Updated UI text to: '{partialContent}'");
             }
             else
             {

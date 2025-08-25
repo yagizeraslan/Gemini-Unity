@@ -45,7 +45,20 @@ namespace YagizEraslan.Gemini.Unity
                 
                 activeRequest.SetRequestHeader("Content-Type", "application/json");
                 activeRequest.SetRequestHeader("x-goog-api-key", apiKey);
-                activeRequest.SendWebRequest();
+                
+                Debug.Log("[GeminiStreamingApi] Sending web request...");
+                var sendOperation = activeRequest.SendWebRequest();
+                
+                // Monitor the request status
+                sendOperation.completed += (asyncOp) => {
+                    Debug.Log($"[GeminiStreamingApi] Request completed with result: {activeRequest.result}");
+                    if (activeRequest.result != UnityWebRequest.Result.Success && activeRequest.result != UnityWebRequest.Result.InProgress)
+                    {
+                        Debug.LogError($"[GeminiStreamingApi] Request failed: {activeRequest.error} (HTTP {activeRequest.responseCode})");
+                        Debug.LogError($"[GeminiStreamingApi] Response text: {activeRequest.downloadHandler?.text}");
+                        onError?.Invoke($"HTTP {activeRequest.responseCode}: {activeRequest.error}");
+                    }
+                };
                 
                 return activeRequest;
             }
@@ -96,7 +109,9 @@ namespace YagizEraslan.Gemini.Unity
                 generationConfig = new GenerationConfig
                 {
                     temperature = request.temperature,
-                    maxOutputTokens = request.max_tokens
+                    maxOutputTokens = request.max_tokens,
+                    topP = 0.95f,
+                    topK = 40
                 }
             };
         }
@@ -112,6 +127,7 @@ namespace YagizEraslan.Gemini.Unity
 
             public StreamingDownloadHandler(Action<string> onTokenReceived, Action onComplete, Action<string> onError)
             {
+                Debug.Log("[GeminiStreamingApi] StreamingDownloadHandler created");
                 this.onTokenReceived = onTokenReceived;
                 this.onComplete = onComplete;
                 this.onError = onError;
@@ -121,8 +137,11 @@ namespace YagizEraslan.Gemini.Unity
             {
                 if (isDisposed)
                 {
+                    Debug.Log("[GeminiStreamingApi] ReceiveData called but handler is disposed");
                     return false;
                 }
+
+                Debug.Log($"[GeminiStreamingApi] ReceiveData called with {dataLength} bytes");
 
                 try
                 {
@@ -134,6 +153,7 @@ namespace YagizEraslan.Gemini.Unity
                     }
 
                     var chunk = Encoding.UTF8.GetString(data, 0, dataLength);
+                    Debug.Log($"[GeminiStreamingApi] Received chunk: {chunk}");
                     buffer.Append(chunk);
                     
                     ProcessBuffer();
@@ -195,10 +215,20 @@ namespace YagizEraslan.Gemini.Unity
                         if (candidate?.content?.parts != null && candidate.content.parts.Length > 0)
                         {
                             var text = candidate.content.parts[0].text;
+                            Debug.Log($"[GeminiStreamingApi] Extracted text from stream: '{text}'");
                             if (!string.IsNullOrEmpty(text))
                             {
+                                Debug.Log($"[GeminiStreamingApi] Invoking onTokenReceived with: '{text}'");
                                 onTokenReceived?.Invoke(text);
                             }
+                            else
+                            {
+                                Debug.Log("[GeminiStreamingApi] Text is null or empty, not invoking callback");
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("[GeminiStreamingApi] No content/parts found in candidate");
                         }
                     }
                 }
@@ -215,6 +245,7 @@ namespace YagizEraslan.Gemini.Unity
 
             protected override void CompleteContent()
             {
+                Debug.Log("[GeminiStreamingApi] CompleteContent called");
                 CleanupBuffer();
                 onComplete?.Invoke();
             }
@@ -255,6 +286,8 @@ namespace YagizEraslan.Gemini.Unity
         {
             public float temperature;
             public int maxOutputTokens;
+            public float topP;
+            public int topK;
         }
 
         [Serializable]

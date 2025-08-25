@@ -54,25 +54,42 @@ namespace YagizEraslan.Gemini.Unity
             
             var url = $"{BASE_URL}{request.model}:generateContent";
             
-            using var www = new UnityWebRequest(url, "POST")
+            // Retry logic for HTTP 500 errors as recommended by Gemini docs
+            int maxRetries = 2;
+            int retryDelay = 1000; // Start with 1 second
+            
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
             {
-                uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonPayload)),
-                downloadHandler = new DownloadHandlerBuffer(),
-                timeout = 30 // 30 second timeout
-            };
-            
-            www.SetRequestHeader("Content-Type", "application/json");
-            www.SetRequestHeader("x-goog-api-key", settings.ApiKey);
-            
-            Debug.Log($"[GeminiAPI] Sending request to: {url}");
-            Debug.Log($"[GeminiAPI] Request payload: {jsonPayload}");
-            
-            try
-            {
-                await www.SendWebRequest();
-                
-                if (www.result != UnityWebRequest.Result.Success)
+                using var www = new UnityWebRequest(url, "POST")
                 {
+                    uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonPayload)),
+                    downloadHandler = new DownloadHandlerBuffer(),
+                    timeout = 30 // 30 second timeout
+                };
+                
+                www.SetRequestHeader("Content-Type", "application/json");
+                www.SetRequestHeader("x-goog-api-key", settings.ApiKey);
+                
+                Debug.Log($"[GeminiAPI] Sending request to: {url} (Attempt {attempt + 1}/{maxRetries + 1})");
+                Debug.Log($"[GeminiAPI] Request payload: {jsonPayload}");
+                
+                try
+                {
+                    await www.SendWebRequest();
+                    
+                    if (www.result == UnityWebRequest.Result.Success)
+                    {
+                        var responseText = www.downloadHandler.text;
+                        Debug.Log($"[GeminiAPI] Response received: {responseText}");
+                        
+                        if (string.IsNullOrEmpty(responseText))
+                        {
+                            throw new Exception("Received empty response from Gemini API");
+                        }
+                        
+                        return responseText;
+                    }
+                    
                     var errorResponse = www.downloadHandler?.text ?? "No error details available";
                     var httpCode = www.responseCode;
                     var errorMsg = $"Gemini API Error (HTTP {httpCode}): {www.error}";
@@ -83,24 +100,34 @@ namespace YagizEraslan.Gemini.Unity
                     }
                     
                     Debug.LogError(errorMsg);
+                    
+                    // Retry for HTTP 500 errors (Internal Server Error)
+                    if (httpCode == 500 && attempt < maxRetries)
+                    {
+                        Debug.Log($"[GeminiAPI] HTTP 500 error, retrying in {retryDelay}ms...");
+                        await Task.Delay(retryDelay);
+                        retryDelay *= 2; // Exponential backoff
+                        continue;
+                    }
+                    
                     throw new Exception(GetUserFriendlyError(www.result, httpCode, errorResponse));
                 }
-                
-                var responseText = www.downloadHandler.text;
-                Debug.Log($"[GeminiAPI] Response received: {responseText}");
-                
-                if (string.IsNullOrEmpty(responseText))
+                catch (Exception e) when (!(e is System.Exception && e.Message.Contains("Gemini API Error")))
                 {
-                    throw new Exception("Received empty response from Gemini API");
+                    if (attempt < maxRetries)
+                    {
+                        Debug.Log($"[GeminiAPI] Network error, retrying in {retryDelay}ms...");
+                        await Task.Delay(retryDelay);
+                        retryDelay *= 2;
+                        continue;
+                    }
+                    
+                    Debug.LogError($"Gemini API request failed: {e.Message}");
+                    throw new Exception($"Network error: {e.Message}");
                 }
-                
-                return responseText;
             }
-            catch (Exception e) when (!(e is System.Exception && e.Message.Contains("Gemini API Error")))
-            {
-                Debug.LogError($"Gemini API request failed: {e.Message}");
-                throw new Exception($"Network error: {e.Message}");
-            }
+            
+            throw new Exception("Maximum retry attempts exceeded");
         }
 
         private void ValidateRequest(ChatCompletionRequest request)
@@ -165,7 +192,9 @@ namespace YagizEraslan.Gemini.Unity
                 generationConfig = new GenerationConfig
                 {
                     temperature = request.temperature,
-                    maxOutputTokens = request.max_tokens
+                    maxOutputTokens = request.max_tokens,
+                    topP = 0.95f,
+                    topK = 40
                 }
             };
         }
@@ -195,6 +224,8 @@ namespace YagizEraslan.Gemini.Unity
         {
             public float temperature;
             public int maxOutputTokens;
+            public float topP;
+            public int topK;
         }
     }
 }
