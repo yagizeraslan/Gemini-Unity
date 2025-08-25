@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b66671d1bb38488997c964e9b8c36a8, type: 3}
+  m_Name: GeminiSettings
+  m_EditorClassIdentifier: YagizEraslan.Gemini.Unity::YagizEraslan.Gemini.Unity.GeminiSettings
+  apiKey: YOUR-API-KEY
+  defaultModel: 0
+  defaultTemperature: 0.7
+  defaultMaxTokens: 1000
+  useStreaming: 1
